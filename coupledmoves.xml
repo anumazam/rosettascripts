@@ -1,0 +1,28 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="ligand_soft_rep" weights="ligand_soft_rep">
+            <Reweight scoretype="fa_elec" weight="0.42"/>
+            <Reweight scoretype="hbond_bb_sc" weight="1.3"/>
+            <Reweight scoretype="hbond_sc" weight="1.3"/>
+            <Reweight scoretype="rama" weight="0.2"/>
+        </ScoreFunction>
+        <ScoreFunction name="hard_rep" weights="ligand">
+            <Reweight scoretype="fa_intra_rep" weight="0.004"/>
+            <Reweight scoretype="fa_elec" weight="0.42"/>
+            <Reweight scoretype="hbond_bb_sc" weight="1.3"/>
+            <Reweight scoretype="hbond_sc" weight="1.3"/>
+            <Reweight scoretype="rama" weight="0.2"/>
+        </ScoreFunction>
+    </SCOREFXNS>
+    <TASKOPERATIONS>
+        <ReadResfile name="rrf" />
+    </TASKOPERATIONS>
+    <MOVERS>
+        <PackRotamersMover name="pack" scorefxn="score12" task_operations="rrf"/>
+        <CoupledMover name="coupled_moves"/>
+    </MOVERS>
+    <PROTOCOLS>
+        <Add mover_name="coupled_moves"/>
+        <Add mover_name="pack"/>
+    </PROTOCOLS>
+</ROSETTASCRIPTS>
