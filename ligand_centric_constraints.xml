@@ -15,55 +15,28 @@
                         <Reweight scoretype="rama" weight="0.2"/>
                         <Reweight scoretype="atom_pair_constraint" weight="1.0"/>
                 </ScoreFunction>
-        </SCOREFXNS>
-        <LIGAND_AREAS>
-                <LigandArea name="inhibitor_dock_sc" chain="X" cutoff="6.0" add_nbr_radius="true" all_atom_mode="true"/>
-                <LigandArea name="water_dock_sc" chain="W" cutoff="2.0" add_nbr_radius="true" all_atom_mode="true"/>
-                <LigandArea name="inhibitor_final_sc" chain="X" cutoff="6.0" add_nbr_radius="true" all_atom_mode="true"/>
-                <LigandArea name="water_final_sc" chain="W" cutoff="2.0" add_nbr_radius="true" all_atom_mode="true"/>
-                <LigandArea name="inhibitor_final_bb" chain="X" cutoff="7.0" add_nbr_radius="false" all_atom_mode="true" Calpha_restraints="0.3"/>
-                <LigandArea name="water_final_bb" chain="W" cutoff="2.5" add_nbr_radius="false" all_atom_mode="true" Calpha_restraints="0.3"/>
-        </LIGAND_AREAS>
-        <INTERFACE_BUILDERS>
-                <InterfaceBuilder name="side_chain_for_docking" ligand_areas="inhibitor_dock_sc,water_dock_sc"/>
-                <InterfaceBuilder name="side_chain_for_final" ligand_areas="inhibitor_final_sc,water_final_sc"/>
-                <InterfaceBuilder name="backbone" ligand_areas="inhibitor_final_bb,water_final_bb" extension_window="3"/>
-        </INTERFACE_BUILDERS>
-        <MOVEMAP_BUILDERS>
-                <MoveMapBuilder name="docking" sc_interface="side_chain_for_docking" minimize_water="true"/>
-                <MoveMapBuilder name="final" sc_interface="side_chain_for_final" bb_interface="backbone" minimize_water="true"/>
-        </MOVEMAP_BUILDERS>
-        <MOVERS>
-                <Translate name="translate_X" chain="X" distribution="uniform" angstroms="5" cycles="50" force="true" tag_along_chains="W"/> first place the ligand
-                <CompoundTranslate name="compound_translate" randomize_order="true" allow_overlap="false">
-                     <Translates chain="W" distribution="uniform" angstroms="1" cycles="50" force="true"/> then the water molecule
-                </CompoundTranslate>
-                <Rotate name="rotate_x" chain="X" distribution="uniform" degrees="360" cycles="800"/>
-                <Rotates name="rotate_w" chain="W" distribution="uniform" degrees="360" cycles="100"/>
-                <SlideTogether name="slide_together" chains="X,W"/>
-                <HighResDocker name="high_res_docker" cycles="6" repack_every_Nth="3" scorefxn="ligand_soft_rep" movemap_builder="docking"/>
-                <FinalMinimizer name="final" scorefxn="hard_rep" movemap_builder="final"/>
-                <InterfaceScoreCalculator name="add_scores" chains="X,W" scorefxn="hard_rep"/>
+	</SCOREFXNS>
+	<RESIDUE_SELECTORS>
+		Index name="firstshell" resnums="68-76,123-128,146-151,158-162,192-195"
+	</RESIDUE_SELECTORS>
+	<TASKOPERATIONS>
+		<ReadResfile name="rrf" />
+		<OperateOnResidueSubset name="subset">
+			<Not>
+				<Index resnums="68-76,123-128,146-151,158-162,192-195"/>
+			</Not>
+			<PreventRepackingRLT />
+		</OperateOnResidueSubset>
+	</TASKOPERATIONS>
+	<MOVERS>
+		<CoupledMovesProtocol name="coupled_moves" task_operations="subset"/>
+		<PackRotamersMover name="pack" scorefxn="score12" task_operations="rrf"/> 
                 <ConstraintSetMover name="cst" add_constraints="true" cst_file="rosetta_inputs/constraints.cst"/>
-                <DumpPdb name="dumppdb" fname="dump.pdb"/>
-
         </MOVERS>
         <PROTOCOLS>
                 <Add mover_name="cst"/>
-                <Add mover_name="translate_X"/>
+		<Add mover_name="coupled_moves"/>
                 <Add mover_name="cst"/>
-                <Add mover_name="rotate_x"/>
-                <Add mover_name="cst"/>
-                <Add mover_name="compound_translate"/>
-                <Add mover_name="cst"/>
-                <Add mover_name="rotate_w"/>
-                <Add mover_name="cst"/>
-                <Add mover_name="slide_together"/>
-                <Add mover_name="cst"/>
-                <Add mover_name="high_res_docker"/>
-                <Add mover_name="dumppdb"/>
-                <Add mover_name="cst"/>
-                <Add mover_name="final"/>
-                <Add mover_name="add_scores"/>
+		<Add mover_name="pack"/>
         </PROTOCOLS>
 </ROSETTASCRIPTS>
